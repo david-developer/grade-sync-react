@@ -11,10 +11,11 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Calendar, List } from "lucide-react";
+import { Calendar, List, Clock, MapPin, FileText, Info, Layers } from "lucide-react";
 import { toast } from "sonner";
 import CourseSelect, { Course } from "@/components/CourseSelect";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface ResitExam {
   course_id: number;
@@ -96,117 +97,189 @@ const StudentResitExams = () => {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+  const renderSkeletonCard = () => (
+    <div className="animate-pulse space-y-4">
+      <Skeleton className="h-8 w-48 mb-2" />
+      <Skeleton className="h-12 w-full" />
+      <Skeleton className="h-10 w-40" />
+    </div>
+  );
+
+  const renderSkeletonTable = () => (
+    <div className="animate-pulse">
+      <Skeleton className="h-8 w-48 mb-4" />
+      <div className="space-y-4">
+        {[1, 2, 3].map((i) => (
+          <Skeleton key={i} className="h-24 w-full" />
+        ))}
       </div>
-    );
-  }
+    </div>
+  );
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-6 text-gradient">Resit Exams</h1>
+    <div className="container mx-auto px-4 py-8 relative">
+      <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-50 via-white to-white dark:from-indigo-900/20 dark:via-gray-900 dark:to-gray-900"></div>
+      
+      <div className="mb-8 bg-gradient-to-r from-violet-600 to-indigo-600 rounded-xl p-6 text-white shadow-xl">
+        <h1 className="text-3xl font-bold flex items-center">
+          <Calendar className="mr-3 h-8 w-8" />
+          Resit Exams
+        </h1>
+        <p className="mt-2 text-indigo-100">Register and manage your resit examinations</p>
+      </div>
 
-      <div className="grid grid-cols-1 gap-6">
-        <Card className="card-hover">
-          <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-t-xl border-b">
-            <CardTitle className="flex items-center text-xl font-bold">
-              <Calendar className="h-5 w-5 mr-3 text-primary" />
-              Declare for Resit Exam
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <Card className="overflow-hidden border border-gray-200/50 dark:border-gray-700/50 shadow-lg hover:shadow-xl transition-all duration-300">
+          <CardHeader className="bg-gradient-to-r from-indigo-50 to-violet-50 dark:from-indigo-900/20 dark:to-violet-900/20 border-b">
+            <CardTitle className="text-xl font-semibold flex items-center">
+              <Calendar className="h-5 w-5 mr-3 text-violet-600 dark:text-violet-400" />
+              Register for Resit Exam
             </CardTitle>
           </CardHeader>
           <CardContent className="pt-6">
-            <form onSubmit={handleDeclareResit} className="space-y-5">
-              <CourseSelect 
-                courses={courses}
-                onChange={(id) => setSelectedCourseId(id)}
-                isLoading={isLoadingCourses}
-                label="Select Course"
-                placeholder="Choose a course for resit"
-              />
-              
-              <Button 
-                type="submit" 
-                className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700" 
-                disabled={isSubmitting || !selectedCourseId}
-              >
-                {isSubmitting ? (
-                  <div className="flex items-center">
-                    <span className="animate-spin mr-2 h-4 w-4 border-2 border-white border-t-transparent rounded-full" />
-                    Submitting...
-                  </div>
-                ) : (
-                  <div className="flex items-center">
-                    <Calendar className="h-4 w-4 mr-2" />
-                    Declare for Resit
-                  </div>
-                )}
-              </Button>
-            </form>
+            {isLoadingCourses ? (
+              renderSkeletonCard()
+            ) : (
+              <form onSubmit={handleDeclareResit} className="space-y-5">
+                <CourseSelect 
+                  courses={courses}
+                  onChange={(id) => setSelectedCourseId(id)}
+                  isLoading={isLoadingCourses}
+                  label="Select Course"
+                  placeholder="Choose a course for resit"
+                />
+                
+                <Button 
+                  type="submit" 
+                  className="w-full h-11 rounded-lg bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 transition-all duration-200 shadow-md hover:shadow-lg" 
+                  disabled={isSubmitting || !selectedCourseId}
+                >
+                  {isSubmitting ? (
+                    <div className="flex items-center">
+                      <span className="animate-spin mr-2 h-4 w-4 border-2 border-white border-t-transparent rounded-full" />
+                      Submitting...
+                    </div>
+                  ) : (
+                    <div className="flex items-center">
+                      <Calendar className="h-4 w-4 mr-2" />
+                      Register for Resit
+                    </div>
+                  )}
+                </Button>
+
+                <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-100 dark:border-blue-800/30">
+                  <h4 className="text-sm font-medium text-blue-800 dark:text-blue-300 flex items-center mb-2">
+                    <Info className="h-4 w-4 mr-2" />
+                    Important Information
+                  </h4>
+                  <ul className="text-xs text-blue-600 dark:text-blue-400 space-y-1 list-disc pl-5">
+                    <li>You must register for each resit exam separately</li>
+                    <li>Registration closes 48 hours before the exam</li>
+                    <li>Check eligibility criteria before registering</li>
+                  </ul>
+                </div>
+              </form>
+            )}
           </CardContent>
         </Card>
 
-        <Card className="card-hover">
-          <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-t-xl border-b">
-            <CardTitle className="flex items-center text-xl font-bold">
-              <List className="h-5 w-5 mr-3 text-primary" />
+        <Card className="lg:col-span-2 overflow-hidden border border-gray-200/50 dark:border-gray-700/50 shadow-lg hover:shadow-xl transition-all duration-300">
+          <CardHeader className="bg-gradient-to-r from-indigo-50 to-violet-50 dark:from-indigo-900/20 dark:to-violet-900/20 border-b">
+            <CardTitle className="text-xl font-semibold flex items-center">
+              <List className="h-5 w-5 mr-3 text-violet-600 dark:text-violet-400" />
               My Registered Resit Exams
             </CardTitle>
           </CardHeader>
           <CardContent className="pt-6">
-            {resitExams.length > 0 ? (
-              <div className="rounded-md border overflow-hidden">
-                <Table>
-                  <TableHeader className="bg-gray-50">
-                    <TableRow>
-                      <TableHead>Course</TableHead>
-                      <TableHead>Exam Date</TableHead>
-                      <TableHead>Location</TableHead>
-                      <TableHead>Details</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {resitExams.map((exam, index) => (
-                      <TableRow key={index} className="hover:bg-gray-50">
-                        <TableCell>
+            {loading ? (
+              renderSkeletonTable()
+            ) : resitExams.length > 0 ? (
+              <div className="space-y-4">
+                {resitExams.map((exam, index) => (
+                  <Card key={index} className="border border-gray-200/70 dark:border-gray-700/70 overflow-hidden hover:shadow-md transition-all duration-200">
+                    <div className="p-4 md:p-6 space-y-4">
+                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div>
+                          <h3 className="font-medium text-lg text-gray-900 dark:text-gray-100 flex items-center">
+                            <Layers className="h-4 w-4 mr-2 text-indigo-500" />
+                            {exam.course_code}
+                          </h3>
+                          <p className="text-gray-600 dark:text-gray-300">{exam.course_name}</p>
+                        </div>
+                        <Badge variant="outline" className="bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-900/30 dark:text-indigo-300 dark:border-indigo-700 px-3 py-1 h-auto text-xs">
+                          Registered
+                        </Badge>
+                      </div>
+                      
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 pt-2 border-t border-gray-100 dark:border-gray-800">
+                        <div className="flex items-center">
+                          <Calendar className="h-4 w-4 mr-2 text-blue-500" />
                           <div>
-                            <p className="font-medium">{exam.course_code}</p>
-                            <p className="text-sm text-gray-500">{exam.course_name}</p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400">Exam Date</p>
+                            <p className="text-sm font-medium">{new Date(exam.exam_date).toLocaleDateString("en-US", { year: 'numeric', month: 'short', day: 'numeric' })}</p>
                           </div>
-                        </TableCell>
-                        <TableCell>
-                          {new Date(exam.exam_date).toLocaleDateString()}
-                        </TableCell>
-                        <TableCell>{exam.location || "TBA"}</TableCell>
-                        <TableCell>
-                          <Button 
-                            variant="outline" 
-                            size="sm"
-                            onClick={() => {
-                              const details = `
-                                Questions: ${exam.no_of_questions || 'Not specified'}
-                                Tools: ${exam.allowed_tools || 'Not specified'}
-                                Notes: ${exam.notes || 'None'}
-                              `;
-                              toast.info(details, {
-                                description: `Course: ${exam.course_code} - ${exam.course_name}`,
-                                duration: 5000
-                              });
-                            }}
-                          >
-                            View Details
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                        </div>
+                        <div className="flex items-center">
+                          <Clock className="h-4 w-4 mr-2 text-amber-500" />
+                          <div>
+                            <p className="text-xs text-gray-500 dark:text-gray-400">Exam Time</p>
+                            <p className="text-sm font-medium">{new Date(exam.exam_date).toLocaleTimeString("en-US", { hour: '2-digit', minute: '2-digit' })}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center">
+                          <MapPin className="h-4 w-4 mr-2 text-red-500" />
+                          <div>
+                            <p className="text-xs text-gray-500 dark:text-gray-400">Location</p>
+                            <p className="text-sm font-medium">{exam.location || "TBA"}</p>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="pt-2 mt-2 border-t border-gray-100 dark:border-gray-800">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => {
+                            toast(
+                              <div className="space-y-2">
+                                <div className="font-medium">{exam.course_code} - {exam.course_name}</div>
+                                <div className="grid grid-cols-2 gap-2 text-sm">
+                                  <div>
+                                    <p className="text-xs text-gray-500">Questions</p>
+                                    <p>{exam.no_of_questions || 'Not specified'}</p>
+                                  </div>
+                                  <div>
+                                    <p className="text-xs text-gray-500">Allowed Tools</p>
+                                    <p>{exam.allowed_tools || 'Not specified'}</p>
+                                  </div>
+                                </div>
+                                {exam.notes && (
+                                  <div className="pt-2 mt-2 border-t border-gray-200">
+                                    <p className="text-xs text-gray-500">Notes</p>
+                                    <p>{exam.notes}</p>
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          }}
+                          className="flex items-center text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50"
+                        >
+                          <FileText className="h-4 w-4 mr-1.5" />
+                          View Exam Details
+                        </Button>
+                      </div>
+                    </div>
+                  </Card>
+                ))}
               </div>
             ) : (
-              <div className="text-center py-8 border rounded-md bg-gray-50">
-                <p className="text-gray-500">
-                  You are not registered for any resit exams.
+              <div className="flex flex-col items-center justify-center py-16 text-center">
+                <div className="rounded-full bg-indigo-50 p-3 mb-4">
+                  <Calendar className="h-6 w-6 text-indigo-500" />
+                </div>
+                <p className="text-gray-600 dark:text-gray-300 font-medium mb-2">You are not registered for any resit exams.</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  Use the form on the left to register for a resit exam.
                 </p>
               </div>
             )}
