@@ -64,12 +64,12 @@ const Header = () => {
   const navLinks = getNavLinks();
 
   return (
-    <header className="bg-primary text-white shadow-md">
+    <header className="bg-gradient-to-r from-blue-600 to-blue-800 text-white shadow-lg">
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
-          <Link to="/" className="flex items-center space-x-2">
-            <BookOpen className="h-6 w-6" />
-            <span className="font-bold text-xl">GradeSync</span>
+          <Link to="/" className="flex items-center space-x-2 group">
+            <BookOpen className="h-6 w-6 transition-transform group-hover:scale-110" />
+            <span className="font-bold text-xl">Exam Management System</span>
           </Link>
 
           {/* Mobile menu toggle */}
@@ -79,7 +79,7 @@ const Header = () => {
                 variant="ghost" 
                 size="icon"
                 onClick={toggleMobileMenu}
-                className="text-white hover:bg-primary-600"
+                className="text-white hover:bg-white/20"
               >
                 {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
               </Button>
@@ -93,19 +93,19 @@ const Header = () => {
                 <Link
                   key={link.href}
                   to={link.href}
-                  className="flex items-center px-3 py-2 text-sm rounded-md hover:bg-primary-700 transition-colors"
+                  className="flex items-center px-3 py-2 text-sm rounded-md hover:bg-white/20 transition-colors"
                 >
                   {link.icon}
                   {link.text}
                 </Link>
               ))}
               <div className="ml-4 flex items-center space-x-2">
-                <span className="text-sm">{user.email}</span>
+                <span className="text-sm font-medium bg-white/10 px-3 py-1 rounded-full">{user.email}</span>
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={logout}
-                  className="bg-transparent border-white text-white hover:bg-white hover:text-primary"
+                  className="bg-transparent border-white text-white hover:bg-white hover:text-blue-700"
                 >
                   <LogOut className="h-4 w-4 mr-1" />
                   Logout
@@ -117,12 +117,12 @@ const Header = () => {
 
         {/* Mobile navigation */}
         {user && mobileMenuOpen && (
-          <nav className="md:hidden mt-4 space-y-2 pb-3">
+          <nav className="md:hidden mt-4 space-y-2 pb-3 border-t border-white/20 pt-3">
             {navLinks.map((link) => (
               <Link
                 key={link.href}
                 to={link.href}
-                className="flex items-center px-3 py-2 rounded-md hover:bg-primary-700 transition-colors"
+                className="flex items-center px-3 py-2 rounded-md hover:bg-white/20 transition-colors"
                 onClick={toggleMobileMenu}
               >
                 {link.icon}
@@ -134,7 +134,7 @@ const Header = () => {
               <Button
                 variant="outline"
                 onClick={logout}
-                className="bg-transparent border-white text-white hover:bg-white hover:text-primary w-full"
+                className="bg-transparent border-white text-white hover:bg-white hover:text-blue-700 w-full"
               >
                 <LogOut className="h-4 w-4 mr-2" />
                 Logout

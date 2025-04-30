@@ -33,7 +33,7 @@
     --input: 214.3 31.8% 91.4%;
     --ring: 221.2 83.2% 53.3%;
 
-    --radius: 0.5rem;
+    --radius: 0.75rem;
 
     --sidebar-background: 221.2 83.2% 53.3%;
     --sidebar-foreground: 0 0% 100%;
@@ -95,25 +95,25 @@
   }
 }
 
-/* Custom styles for the GradeSync app */
+/* Custom styles for the Exam Management System app */
 .app-container {
   @apply min-h-screen flex flex-col;
 }
 
 .page-container {
-  @apply container mx-auto py-6 px-4 sm:px-6 flex-grow;
+  @apply container mx-auto py-8 px-4 sm:px-6 flex-grow;
 }
 
 .auth-form {
-  @apply max-w-md mx-auto mt-16 p-6 bg-white rounded-lg shadow-md;
+  @apply max-w-md mx-auto mt-16 p-8 bg-white rounded-xl shadow-lg;
 }
 
 .dashboard-stats {
-  @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6;
+  @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8;
 }
 
 .data-table {
-  @apply w-full border-collapse bg-white rounded-lg shadow overflow-hidden;
+  @apply w-full border-collapse bg-white rounded-xl shadow-md overflow-hidden;
 }
 
 .data-table th {
@@ -125,5 +125,38 @@
 }
 
 .form-section {
-  @apply mt-8 p-6 bg-white rounded-lg shadow-md;
+  @apply mt-8 p-8 bg-white rounded-xl shadow-md;
+}
+
+/* Animations for a more modern feel */
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.hover-scale {
+  @apply transition-transform duration-200 ease-in-out;
+}
+
+.hover-scale:hover {
+  @apply transform scale-105;
+}
+
+/* Card hover effects */
+.card-hover {
+  @apply transition-all duration-300;
+}
+
+.card-hover:hover {
+  @apply shadow-xl -translate-y-1;
 }
