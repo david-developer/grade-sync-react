@@ -105,7 +105,7 @@
 }
 
 .auth-form {
-  @apply max-w-md mx-auto mt-16 p-8 bg-white rounded-xl shadow-lg;
+  @apply max-w-md mx-auto mt-16 p-8 bg-white dark:bg-gray-800 rounded-xl shadow-lg;
 }
 
 .dashboard-stats {
@@ -113,22 +113,22 @@
 }
 
 .data-table {
-  @apply w-full border-collapse bg-white rounded-xl shadow-md overflow-hidden;
+  @apply w-full border-collapse bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden;
 }
 
 .data-table th {
-  @apply px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50;
+  @apply px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider bg-gray-50 dark:bg-gray-700;
 }
 
 .data-table td {
-  @apply px-6 py-4 whitespace-nowrap text-sm text-gray-900 border-t border-gray-200;
+  @apply px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-200 border-t border-gray-200 dark:border-gray-700;
 }
 
 .form-section {
-  @apply mt-8 p-8 bg-white rounded-xl shadow-md;
+  @apply mt-8 p-8 bg-white dark:bg-gray-800 rounded-xl shadow-md;
 }
 
-/* Animations for a more modern feel */
+/* Advanced animations for a more modern feel */
 .animate-fade-in {
   animation: fadeIn 0.5s ease-out forwards;
 }
@@ -159,4 +159,58 @@
 
 .card-hover:hover {
   @apply shadow-xl -translate-y-1;
+}
+
+/* Text gradient effect */
+.text-gradient {
+  @apply bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600;
+}
+
+/* Glassmorphism effects */
+.glass-effect {
+  @apply bg-white/80 dark:bg-gray-900/80 backdrop-blur-md;
+}
+
+.glass-card {
+  @apply glass-effect rounded-xl border border-white/20 dark:border-gray-800/50;
+}
+
+/* Enhanced form field styles */
+.form-field {
+  @apply transition-all duration-200 focus:ring-2 focus:ring-blue-500/50;
+}
+
+/* Better looking buttons with gradient */
+.gradient-button {
+  @apply bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700;
+}
+
+/* Fancy card with gradient border */
+.fancy-card {
+  @apply p-0.5 rounded-xl bg-gradient-to-r from-blue-500 to-indigo-500;
+}
+
+.fancy-card-inner {
+  @apply bg-white dark:bg-gray-800 rounded-lg p-6 h-full;
+}
+
+/* Custom table styling */
+.modern-table {
+  @apply w-full border-collapse overflow-hidden rounded-xl;
+}
+
+.modern-table thead {
+  @apply bg-gradient-to-r from-blue-100 to-indigo-100 dark:from-blue-900/50 dark:to-indigo-900/50;
+}
+
+.modern-table th {
+  @apply px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider;
+}
+
+.modern-table tr {
+  @apply border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors;
+}
+
+.modern-table td {
+  @apply px-6 py-4 whitespace-nowrap;
 }

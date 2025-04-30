@@ -11,7 +11,9 @@ import {
   Upload, 
   LogOut, 
   Menu, 
-  X
+  X,
+  Users,
+  FileSearch
 } from "lucide-react";
 import { useState } from "react";
 
@@ -45,6 +47,7 @@ const Header = () => {
         ...commonLinks,
         { text: "Upload Grades", href: "/instructor/upload-grades", icon: <Upload className="h-4 w-4 mr-2" /> },
         { text: "Resit Exams", href: "/instructor/resit-exams", icon: <Calendar className="h-4 w-4 mr-2" /> },
+        { text: "Registrations", href: "/instructor/registrations", icon: <FileSearch className="h-4 w-4 mr-2" /> },
         { text: "Notifications", href: "/instructor/notifications", icon: <Bell className="h-4 w-4 mr-2" /> },
       ];
     }

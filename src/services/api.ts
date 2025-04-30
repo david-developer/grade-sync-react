@@ -74,6 +74,10 @@ export const studentAPI = {
     const response = await api.get("/student/my-grades");
     return response.data;
   },
+  getMyCourses: async () => {
+    const response = await api.get("/student/my-courses");
+    return response.data;
+  },
   getResitExams: async () => {
     const response = await api.get("/student/my-resit-exams");
     return response.data;
@@ -90,6 +94,10 @@ export const studentAPI = {
 
 // Instructor API calls
 export const instructorAPI = {
+  getMyCourses: async () => {
+    const response = await api.get("/instructor/my-courses");
+    return response.data;
+  },
   uploadGradesFile: async (file: File, course_id: number) => {
     const formData = new FormData();
     formData.append("file", file);
@@ -120,11 +128,16 @@ export const instructorAPI = {
     window.open(`http://localhost:3000/api/instructor/export-resit/${course_id}`, "_blank");
     return { message: "Export started" };
   },
-  sendNotification: async (target_user_id: number, message: string) => {
-    const response = await api.post("/instructor/notify", {
-      target_user_id,
-      message,
-    });
+  sendNotification: async (course_id: number | null = null, message: string, target_user_id?: number) => {
+    const payload: any = { message };
+    
+    if (target_user_id) {
+      payload.target_user_id = target_user_id;
+    } else if (course_id) {
+      payload.course_id = course_id;
+    }
+    
+    const response = await api.post("/instructor/notify", payload);
     return response.data;
   },
 };
@@ -136,6 +149,17 @@ export const facultyAPI = {
     formData.append("file", file);
     
     const response = await api.post("/faculty/upload-schedule", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    return response.data;
+  },
+  uploadResitSchedule: async (file: File) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    
+    const response = await api.post("/faculty/upload-resit-schedule", formData, {
       headers: {
         "Content-Type": "multipart/form-data",
       },
@@ -154,11 +178,16 @@ export const facultyAPI = {
     const response = await api.get(`/faculty/resit-registrations/${course_id}`);
     return response.data;
   },
-  sendNotification: async (target_user_id: number, message: string) => {
-    const response = await api.post("/faculty/notify", {
-      target_user_id,
-      message,
-    });
+  sendNotification: async (course_id: number | null = null, message: string, target_user_id?: number) => {
+    const payload: any = { message };
+    
+    if (target_user_id) {
+      payload.target_user_id = target_user_id;
+    } else if (course_id) {
+      payload.course_id = course_id;
+    }
+    
+    const response = await api.post("/faculty/notify", payload);
     return response.data;
   },
 };
