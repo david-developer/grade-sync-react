@@ -144,6 +144,13 @@ export const instructorAPI = {
 
 // Faculty Secretary API calls
 export const facultyAPI = {
+  // Add the missing getCourses method
+  getCourses: async () => {
+    // Since there's no direct endpoint mentioned in the backend for faculty courses,
+    // we'll use a general endpoint that should return courses the faculty can manage
+    const response = await api.get("/faculty/courses");
+    return response.data;
+  },
   uploadSchedule: async (file: File) => {
     const formData = new FormData();
     formData.append("file", file);
@@ -177,6 +184,11 @@ export const facultyAPI = {
   getResitRegistrations: async (course_id: number) => {
     const response = await api.get(`/faculty/resit-registrations/${course_id}`);
     return response.data;
+  },
+  // Add the missing exportResit method
+  exportResit: async (course_id: number) => {
+    window.open(`http://localhost:3000/api/faculty/export-resit/${course_id}`, "_blank");
+    return { message: "Export started" };
   },
   sendNotification: async (course_id: number | null = null, message: string, target_user_id?: number) => {
     const payload: any = { message };

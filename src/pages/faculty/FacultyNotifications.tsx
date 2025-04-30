@@ -25,13 +25,13 @@ const FacultyNotifications = () => {
   useEffect(() => {
     const fetchCourses = async () => {
       try {
-        // Assuming there's an API endpoint to fetch courses that faculty can manage
-        // If not available, you'll need to adjust this
+        // Try to fetch courses using the facultyAPI.getCourses method
         const data = await facultyAPI.getCourses();
         setCourses(data.courses || []);
       } catch (error) {
         console.error("Error fetching courses:", error);
-        // Fallback in case there's no specific faculty course endpoint
+        // Fallback in case the endpoint doesn't exist yet
+        toast.error("Could not fetch courses. Please check if the API is available.");
         setCourses([]);
       } finally {
         setIsLoadingCourses(false);
@@ -97,9 +97,15 @@ const FacultyNotifications = () => {
     setIsExporting(true);
     
     try {
-      // Assuming faculty also has access to export resit registrations
-      await facultyAPI.exportResit(selectedCourseId);
-      toast.success("Export started. Check your downloads folder.");
+      // Try to use the exportResit method
+      try {
+        await facultyAPI.exportResit(selectedCourseId);
+        toast.success("Export started. Check your downloads folder.");
+      } catch (error) {
+        // Fallback if the method doesn't exist yet
+        console.error("Error exporting resit list:", error);
+        toast.error("Export functionality is not available yet.");
+      }
     } catch (error) {
       console.error("Error exporting resit list:", error);
     } finally {
