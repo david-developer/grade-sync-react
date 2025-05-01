@@ -40,27 +40,31 @@ const StudentResitExams = () => {
     const fetchResitExams = async () => {
       try {
         const data = await studentAPI.getResitExams();
+        console.log("Resit exams data:", data);
         setResitExams(data.resitExams || []);
       } catch (error) {
         console.error("Error fetching resit exams:", error);
+        toast.error("Failed to fetch resit exams. Please try again later.");
       } finally {
         setLoading(false);
       }
     };
 
-    const fetchCourses = async () => {
+    const fetchEligibleCourses = async () => {
       try {
-        const data = await studentAPI.getMyCourses();
+        const data = await studentAPI.getEligibleResitCourses();
+        console.log("Eligible courses:", data);
         setCourses(data.courses || []);
       } catch (error) {
-        console.error("Error fetching courses:", error);
+        console.error("Error fetching eligible courses:", error);
+        toast.error("Failed to fetch eligible courses. Please try again later.");
       } finally {
         setIsLoadingCourses(false);
       }
     };
 
     fetchResitExams();
-    fetchCourses();
+    fetchEligibleCourses();
   }, []);
 
   const handleDeclareResit = async (e: React.FormEvent) => {
@@ -91,6 +95,8 @@ const StudentResitExams = () => {
         toast.error("No resit exam available for this course yet");
       } else if (error.response?.data?.error?.includes("not eligible")) {
         toast.error("You are not eligible for a resit in this course");
+      } else {
+        toast.error("Failed to register for resit. Please try again later.");
       }
     } finally {
       setIsSubmitting(false);

@@ -78,12 +78,23 @@ export const studentAPI = {
     const response = await api.get("/student/my-courses");
     return response.data;
   },
-  getResitExams: async () => {
-    const response = await api.get("/student/my-resit-exams");
+  getEligibleResitCourses: async () => {
+    // New endpoint to get only courses eligible for resit
+    const response = await api.get("/student/eligible-resit-courses");
     return response.data;
   },
+  getResitExams: async () => {
+    try {
+      const response = await api.get("/student/my-resit-exams");
+      return response.data;
+    } catch (error) {
+      console.error("Error in getResitExams:", error);
+      // Fallback in case the API fails
+      return { resitExams: [] };
+    }
+  },
   declareResit: async (course_id: number) => {
-    const response = await api.post("/declare-resit", { course_id });
+    const response = await api.post("/student/declare-resit", { course_id });
     return response.data;
   },
   getNotifications: async () => {
@@ -95,8 +106,13 @@ export const studentAPI = {
 // Instructor API calls
 export const instructorAPI = {
   getMyCourses: async () => {
-    const response = await api.get("/instructor/my-courses");
-    return response.data;
+    try {
+      const response = await api.get("/instructor/my-courses");
+      return response.data;
+    } catch (error) {
+      console.error("Error in getMyCourses:", error);
+      return { courses: [] };
+    }
   },
   uploadGradesFile: async (file: File, course_id: number) => {
     const formData = new FormData();
@@ -112,7 +128,6 @@ export const instructorAPI = {
   },
   addResitDetails: async (data: {
     course_id: number;
-    exam_date: string;
     no_of_questions?: number;
     allowed_tools?: string;
     notes?: string;
@@ -124,9 +139,29 @@ export const instructorAPI = {
     const response = await api.get(`/instructor/resit-registrations/${course_id}`);
     return response.data;
   },
+  getStudents: async () => {
+    const response = await api.get('/instructor/students');
+    return response.data;
+  },
   exportResit: async (course_id: number) => {
-    window.open(`http://localhost:3000/api/instructor/export-resit/${course_id}`, "_blank");
-    return { message: "Export started" };
+    try {
+      const response = await api.get(`/instructor/export-resit/${course_id}`, {
+        responseType: 'blob'
+      });
+      
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `resit-participants-${course_id}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      
+      return { success: true, message: "Export completed successfully" };
+    } catch (error) {
+      console.error("Export error:", error);
+      return { success: false, message: "Failed to export resit participants" };
+    }
   },
   sendNotification: async (course_id: number | null = null, message: string, target_user_id?: number) => {
     const payload: any = { message };
@@ -137,19 +172,26 @@ export const instructorAPI = {
       payload.course_id = course_id;
     }
     
-    const response = await api.post("/instructor/notify", payload);
-    return response.data;
+    try {
+      const response = await api.post("/instructor/notify", payload);
+      return response.data;
+    } catch (error) {
+      console.error("Notification error:", error);
+      throw error;
+    }
   },
 };
 
 // Faculty Secretary API calls
 export const facultyAPI = {
-  // Add the missing getCourses method
   getCourses: async () => {
-    // Since there's no direct endpoint mentioned in the backend for faculty courses,
-    // we'll use a general endpoint that should return courses the faculty can manage
-    const response = await api.get("/faculty/courses");
-    return response.data;
+    try {
+      const response = await api.get("/faculty/courses");
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching faculty courses:", error);
+      return { courses: [] };
+    }
   },
   uploadSchedule: async (file: File) => {
     const formData = new FormData();
@@ -185,10 +227,33 @@ export const facultyAPI = {
     const response = await api.get(`/faculty/resit-registrations/${course_id}`);
     return response.data;
   },
-  // Add the missing exportResit method
+  getAllResitRegistrations: async () => {
+    const response = await api.get('/faculty/all-resit-registrations');
+    return response.data;
+  },
+  getAllResitExams: async () => {
+    const response = await api.get('/faculty/all-resit-exams');
+    return response.data;
+  },
   exportResit: async (course_id: number) => {
-    window.open(`http://localhost:3000/api/faculty/export-resit/${course_id}`, "_blank");
-    return { message: "Export started" };
+    try {
+      const response = await api.get(`/faculty/export-resit/${course_id}`, {
+        responseType: 'blob'
+      });
+      
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `resit-participants-${course_id}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      
+      return { success: true, message: "Export completed successfully" };
+    } catch (error) {
+      console.error("Export error:", error);
+      return { success: false, message: "Failed to export resit participants" };
+    }
   },
   sendNotification: async (course_id: number | null = null, message: string, target_user_id?: number) => {
     const payload: any = { message };
@@ -199,8 +264,13 @@ export const facultyAPI = {
       payload.course_id = course_id;
     }
     
-    const response = await api.post("/faculty/notify", payload);
-    return response.data;
+    try {
+      const response = await api.post("/faculty/notify", payload);
+      return response.data;
+    } catch (error) {
+      console.error("Notification error:", error);
+      throw error;
+    }
   },
 };
 

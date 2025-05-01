@@ -1,10 +1,12 @@
 
 import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { dashboardAPI } from "@/services/api";
+import { dashboardAPI, facultyAPI } from "@/services/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Award, BookOpen, CalendarClock, Users, TrendingUp, Layers, GraduationCap } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 
 interface DashboardData {
   role: string;
@@ -29,10 +31,34 @@ interface DashboardData {
   total_resit_exams?: number;
 }
 
+interface ResitExam {
+  course_id: number;
+  course_code: string;
+  course_name: string;
+  instructor_name: string;
+  exam_date: string;
+}
+
+interface ResitRegistration {
+  course_id: number;
+  course_code: string;
+  course_name: string;
+  student_count: number;
+  students: Array<{
+    student_id: number;
+    student_name: string;
+  }>;
+}
+
 const Dashboard = () => {
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [resitExams, setResitExams] = useState<ResitExam[]>([]);
+  const [resitRegistrations, setResitRegistrations] = useState<ResitRegistration[]>([]);
+  const [showResitExams, setShowResitExams] = useState(false);
+  const [showResitRegistrations, setShowResitRegistrations] = useState(false);
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -46,8 +72,26 @@ const Dashboard = () => {
       }
     };
 
+    // For faculty secretary, fetch additional data
+    const fetchFacultyData = async () => {
+      if (user?.role === "faculty_secretary") {
+        try {
+          const examsData = await facultyAPI.getAllResitExams();
+          setResitExams(examsData.resitExams || []);
+          
+          const registrationsData = await facultyAPI.getAllResitRegistrations();
+          setResitRegistrations(registrationsData.registrations || []);
+        } catch (error) {
+          console.error("Error fetching faculty data:", error);
+        }
+      }
+    };
+
     fetchDashboardData();
-  }, []);
+    if (user?.role === "faculty_secretary") {
+      fetchFacultyData();
+    }
+  }, [user?.role]);
 
   const getGradientClass = (index: number) => {
     const gradients = [
@@ -61,8 +105,11 @@ const Dashboard = () => {
     return gradients[index % gradients.length];
   };
 
-  const renderStatCard = (title: string, value: string | number, icon: React.ReactNode, index: number) => (
-    <Card className="hover:shadow-xl transition-all duration-300 hover:-translate-y-1 overflow-hidden">
+  const renderStatCard = (title: string, value: string | number, icon: React.ReactNode, index: number, onClick?: () => void) => (
+    <Card 
+      className={`hover:shadow-xl transition-all duration-300 hover:-translate-y-1 overflow-hidden ${onClick ? 'cursor-pointer' : ''}`}
+      onClick={onClick}
+    >
       <div className={`absolute inset-0 bg-gradient-to-br ${getGradientClass(index)} opacity-10 rounded-xl`}></div>
       <CardHeader className="pb-2 flex flex-row items-center justify-between">
         <CardTitle className="text-base font-medium text-gray-600 dark:text-gray-300">{title}</CardTitle>
@@ -106,11 +153,11 @@ const Dashboard = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
           {renderStatCard("Total Courses", dashboardData.total_courses || 0, 
-            <BookOpen className="h-5 w-5 text-blue-600" />, 0)}
+            <BookOpen className="h-5 w-5 text-blue-600" />, 0, () => navigate("/student/grades"))}
           {renderStatCard("Registered Resits", dashboardData.registered_resits || 0, 
-            <CalendarClock className="h-5 w-5 text-green-600" />, 1)}
+            <CalendarClock className="h-5 w-5 text-green-600" />, 1, () => navigate("/student/resit-exams"))}
           {renderStatCard("GPA", dashboardData.gpa ?? "N/A", 
-            <Award className="h-5 w-5 text-yellow-600" />, 2)}
+            <Award className="h-5 w-5 text-yellow-600" />, 2, () => navigate("/student/grades"))}
         </div>
 
         {dashboardData.courses && dashboardData.courses.length > 0 && (
@@ -199,10 +246,108 @@ const Dashboard = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {renderStatCard("Total Resit Registrations", dashboardData.total_resit_registrations || 0, 
-            <BookOpen className="h-5 w-5 text-emerald-600" />, 0)}
+            <BookOpen className="h-5 w-5 text-emerald-600" />, 0, () => setShowResitRegistrations(true))}
           {renderStatCard("Total Resit Exams", dashboardData.total_resit_exams || 0, 
-            <CalendarClock className="h-5 w-5 text-teal-600" />, 1)}
+            <CalendarClock className="h-5 w-5 text-teal-600" />, 1, () => setShowResitExams(true))}
         </div>
+
+        {showResitExams && (
+          <Card className="mt-6 border border-gray-200/50 dark:border-gray-700/50 shadow-lg">
+            <CardHeader className="bg-gradient-to-r from-teal-50 to-emerald-50 dark:from-teal-900/20 dark:to-emerald-900/20 border-b">
+              <div className="flex justify-between items-center">
+                <CardTitle className="font-semibold flex items-center">
+                  <CalendarClock className="h-5 w-5 mr-2 text-teal-600" />
+                  All Resit Exams
+                </CardTitle>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => setShowResitExams(false)}
+                >
+                  Close
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent className="p-0">
+              <div className="p-4">
+                {resitExams.length > 0 ? (
+                  <div className="divide-y divide-gray-100 dark:divide-gray-800">
+                    {resitExams.map((exam, i) => (
+                      <div key={i} className="py-4 first:pt-0 last:pb-0">
+                        <div className="flex justify-between items-start mb-1">
+                          <h4 className="font-medium">{exam.course_code} - {exam.course_name}</h4>
+                        </div>
+                        <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Instructor: {exam.instructor_name}</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                          Date: {new Date(exam.exam_date).toLocaleDateString('en-US', { 
+                            year: 'numeric', 
+                            month: 'long', 
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-center py-8 text-gray-500 dark:text-gray-400">No resit exams scheduled yet.</p>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {showResitRegistrations && (
+          <Card className="mt-6 border border-gray-200/50 dark:border-gray-700/50 shadow-lg">
+            <CardHeader className="bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20 border-b">
+              <div className="flex justify-between items-center">
+                <CardTitle className="font-semibold flex items-center">
+                  <BookOpen className="h-5 w-5 mr-2 text-emerald-600" />
+                  All Resit Registrations
+                </CardTitle>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => setShowResitRegistrations(false)}
+                >
+                  Close
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent className="p-0">
+              <div className="p-4">
+                {resitRegistrations.length > 0 ? (
+                  <div className="divide-y divide-gray-100 dark:divide-gray-800">
+                    {resitRegistrations.map((reg, i) => (
+                      <div key={i} className="py-4 first:pt-0 last:pb-0">
+                        <div className="flex justify-between items-start mb-1">
+                          <h4 className="font-medium">{reg.course_code} - {reg.course_name}</h4>
+                          <span className="bg-emerald-100 text-emerald-800 text-xs px-2 py-1 rounded-full">
+                            {reg.student_count} students
+                          </span>
+                        </div>
+                        <div className="mt-2">
+                          <p className="text-sm font-medium text-gray-600 dark:text-gray-300 mb-1">Registered Students:</p>
+                          <ul className="text-sm text-gray-500 dark:text-gray-400 pl-4 list-disc">
+                            {reg.students.slice(0, 5).map((student, j) => (
+                              <li key={j}>{student.student_name}</li>
+                            ))}
+                            {reg.students.length > 5 && (
+                              <li className="italic">And {reg.students.length - 5} more...</li>
+                            )}
+                          </ul>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-center py-8 text-gray-500 dark:text-gray-400">No students have registered for resit exams yet.</p>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </div>
     );
   };

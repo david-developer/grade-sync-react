@@ -24,12 +24,22 @@ interface Grade {
 const StudentGrades = () => {
   const [grades, setGrades] = useState<Grade[]>([]);
   const [loading, setLoading] = useState(true);
+  const [gpa, setGpa] = useState<string>("0.00");
 
   useEffect(() => {
     const fetchGrades = async () => {
       try {
         const data = await studentAPI.getGrades();
-        setGrades(data.grades);
+        setGrades(data.grades || []);
+        
+        // Calculate GPA
+        if (data.grades && data.grades.length > 0) {
+          const validGrades = data.grades.filter(grade => grade.grade !== null);
+          if (validGrades.length > 0) {
+            const averageGrade = validGrades.reduce((sum, grade) => sum + (grade.grade || 0), 0) / validGrades.length;
+            setGpa(averageGrade.toFixed(2));
+          }
+        }
       } catch (error) {
         console.error("Error fetching grades:", error);
       } finally {
@@ -68,17 +78,14 @@ const StudentGrades = () => {
   };
 
   const calculateGPAColor = () => {
-    if (!grades.length) return "";
+    const parsedGPA = parseFloat(gpa);
     
-    // Just for visual demonstration - you might want to implement actual GPA calculation logic
-    const avgGrade = grades.reduce((sum, grade) => {
-      return sum + (grade.grade || 0);
-    }, 0) / grades.length;
+    if (isNaN(parsedGPA)) return "";
     
-    if (avgGrade >= 80) return "bg-green-100 text-green-800";
-    if (avgGrade >= 70) return "bg-teal-100 text-teal-800";
-    if (avgGrade >= 60) return "bg-blue-100 text-blue-800";
-    if (avgGrade >= 50) return "bg-yellow-100 text-yellow-800";
+    if (parsedGPA >= 80) return "bg-green-100 text-green-800";
+    if (parsedGPA >= 70) return "bg-teal-100 text-teal-800";
+    if (parsedGPA >= 60) return "bg-blue-100 text-blue-800";
+    if (parsedGPA >= 50) return "bg-yellow-100 text-yellow-800";
     return "bg-red-100 text-red-800";
   };
 
@@ -114,7 +121,7 @@ const StudentGrades = () => {
             </CardTitle>
             {!loading && grades.length > 0 && (
               <Badge className={`${calculateGPAColor()} h-7 text-xs px-3`}>
-                GPA: {(grades.reduce((sum, grade) => sum + (grade.grade || 0), 0) / grades.length).toFixed(2)}
+                GPA: {gpa}
               </Badge>
             )}
           </CardHeader>
