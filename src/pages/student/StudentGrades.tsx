@@ -34,10 +34,15 @@ const StudentGrades = () => {
         
         // Calculate GPA
         if (data.grades && data.grades.length > 0) {
-          const validGrades = data.grades.filter(grade => grade.grade !== null);
+          const validGrades = data.grades.filter((grade: Grade) => grade.grade !== null);
           if (validGrades.length > 0) {
-            const averageGrade = validGrades.reduce((sum, grade) => sum + (grade.grade || 0), 0) / validGrades.length;
-            setGpa(averageGrade.toFixed(2));
+            const totalGradePoints = validGrades.reduce((sum: number, grade: Grade) => {
+              return sum + (grade.grade || 0);
+            }, 0);
+            const calculatedGpa = totalGradePoints / validGrades.length;
+            setGpa(calculatedGpa.toFixed(2));
+          } else {
+            setGpa("0.00");
           }
         }
       } catch (error) {
@@ -80,7 +85,7 @@ const StudentGrades = () => {
   const calculateGPAColor = () => {
     const parsedGPA = parseFloat(gpa);
     
-    if (isNaN(parsedGPA)) return "";
+    if (isNaN(parsedGPA)) return "bg-gray-100 text-gray-800";
     
     if (parsedGPA >= 80) return "bg-green-100 text-green-800";
     if (parsedGPA >= 70) return "bg-teal-100 text-teal-800";
@@ -113,7 +118,7 @@ const StudentGrades = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <Card className="md:col-span-2 hover:shadow-xl transition-all duration-300">
+        <Card className="md:col-span-2 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
           <CardHeader className="bg-gradient-to-r from-indigo-50 to-blue-50 dark:from-indigo-900/20 dark:to-blue-900/20 border-b flex flex-row items-center justify-between">
             <CardTitle className="font-semibold flex items-center">
               <BookOpen className="h-5 w-5 mr-2 text-indigo-600 dark:text-indigo-400" />
@@ -138,7 +143,14 @@ const StudentGrades = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {renderSkeletonRows()}
+                    {Array(5).fill(0).map((_, i) => (
+                      <TableRow key={i}>
+                        <TableCell><Skeleton className="h-4 w-20" /></TableCell>
+                        <TableCell><Skeleton className="h-4 w-40" /></TableCell>
+                        <TableCell><Skeleton className="h-4 w-12" /></TableCell>
+                        <TableCell><Skeleton className="h-6 w-16" /></TableCell>
+                      </TableRow>
+                    ))}
                   </TableBody>
                 </Table>
               </div>
@@ -186,7 +198,7 @@ const StudentGrades = () => {
           </CardContent>
         </Card>
 
-        <Card className="hover:shadow-xl transition-all duration-300">
+        <Card className="hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
           <CardHeader className="bg-gradient-to-r from-indigo-50 to-blue-50 dark:from-indigo-900/20 dark:to-blue-900/20 border-b">
             <CardTitle className="font-semibold flex items-center">
               <BookOpen className="h-5 w-5 mr-2 text-indigo-600 dark:text-indigo-400" />

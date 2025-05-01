@@ -1,3 +1,4 @@
+
 import axios from "axios";
 import { toast } from "sonner";
 
@@ -79,8 +80,13 @@ export const studentAPI = {
   },
   getEligibleResitCourses: async () => {
     // New endpoint to get only courses eligible for resit
-    const response = await api.get("/student/eligible-resit-courses");
-    return response.data;
+    try {
+      const response = await api.get("/student/eligible-resit-courses");
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching eligible resit courses:", error);
+      throw error;
+    }
   },
   getResitExams: async () => {
     try {
@@ -88,13 +94,17 @@ export const studentAPI = {
       return response.data;
     } catch (error) {
       console.error("Error in getResitExams:", error);
-      // Fallback in case the API fails
-      return { resitExams: [] };
+      throw error;
     }
   },
   declareResit: async (course_id: number) => {
-    const response = await api.post("/student/declare-resit", { course_id });
-    return response.data;
+    try {
+      const response = await api.post("/student/declare-resit", { course_id });
+      return response.data;
+    } catch (error) {
+      console.error("Error declaring resit:", error);
+      throw error;
+    }
   },
   getNotifications: async () => {
     const response = await api.get("/student/notifications");
@@ -140,8 +150,13 @@ export const instructorAPI = {
     return response.data;
   },
   getStudents: async () => {
-    const response = await api.get('/instructor/students');
-    return response.data;
+    try {
+      const response = await api.get('/instructor/students');
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching students:", error);
+      return { students: [] };
+    }
   },
   exportResit: async (course_id: number) => {
     try {
@@ -197,6 +212,7 @@ export const facultyAPI = {
     const formData = new FormData();
     formData.append("file", file);
     
+    // Corrected endpoint to /faculty/upload-schedule
     const response = await api.post("/faculty/upload-schedule", formData, {
       headers: {
         "Content-Type": "multipart/form-data",
@@ -208,7 +224,8 @@ export const facultyAPI = {
     const formData = new FormData();
     formData.append("file", file);
     
-    const response = await api.post("/faculty/upload-resit-schedule", formData, {
+    // Use the correct endpoint
+    const response = await api.post("/faculty/upload-schedule", formData, {
       headers: {
         "Content-Type": "multipart/form-data",
       },
@@ -224,16 +241,31 @@ export const facultyAPI = {
     return response.data;
   },
   getResitRegistrations: async (course_id: number) => {
-    const response = await api.get(`/faculty/resit-registrations/${course_id}`);
-    return response.data;
+    try {
+      const response = await api.get(`/faculty/resit-registrations/${course_id}`);
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching resit registrations:", error);
+      throw error;
+    }
   },
   getAllResitRegistrations: async () => {
-    const response = await api.get('/faculty/all-resit-registrations');
-    return response.data;
+    try {
+      const response = await api.get('/faculty/all-resit-registrations');
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching all resit registrations:", error);
+      throw error;
+    }
   },
   getAllResitExams: async () => {
-    const response = await api.get('/faculty/all-resit-exams');
-    return response.data;
+    try {
+      const response = await api.get('/faculty/all-resit-exams');
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching all resit exams:", error);
+      throw error;
+    }
   },
   exportResit: async (course_id: number) => {
     try {

@@ -29,7 +29,7 @@ const FacultyUploadSchedule = () => {
     setIsUploadingCsv(true);
     
     try {
-      const response = await facultyAPI.uploadResitSchedule(csvFile);
+      const response = await facultyAPI.uploadSchedule(csvFile);
       toast.success("Resit schedule CSV uploaded successfully");
       
       // Clear the form
@@ -42,6 +42,7 @@ const FacultyUploadSchedule = () => {
       }
     } catch (error) {
       console.error("Error uploading resit schedule:", error);
+      toast.error("Failed to upload resit schedule");
     } finally {
       setIsUploadingCsv(false);
     }

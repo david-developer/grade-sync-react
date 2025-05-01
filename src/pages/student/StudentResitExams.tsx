@@ -16,6 +16,7 @@ import { toast } from "sonner";
 import CourseSelect, { Course } from "@/components/CourseSelect";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface ResitExam {
   course_id: number;
@@ -52,6 +53,7 @@ const StudentResitExams = () => {
 
     const fetchEligibleCourses = async () => {
       try {
+        setIsLoadingCourses(true);
         const data = await studentAPI.getEligibleResitCourses();
         console.log("Eligible courses:", data);
         setCourses(data.courses || []);
@@ -103,6 +105,10 @@ const StudentResitExams = () => {
     }
   };
 
+  const handleSelectCourse = (courseId: number) => {
+    setSelectedCourseId(courseId);
+  };
+
   const renderSkeletonCard = () => (
     <div className="animate-pulse space-y-4">
       <Skeleton className="h-8 w-48 mb-2" />
@@ -135,7 +141,7 @@ const StudentResitExams = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <Card className="overflow-hidden border border-gray-200/50 dark:border-gray-700/50 shadow-lg hover:shadow-xl transition-all duration-300">
+        <Card className="overflow-hidden border border-gray-200/50 dark:border-gray-700/50 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
           <CardHeader className="bg-gradient-to-r from-indigo-50 to-violet-50 dark:from-indigo-900/20 dark:to-violet-900/20 border-b">
             <CardTitle className="text-xl font-semibold flex items-center">
               <Calendar className="h-5 w-5 mr-3 text-violet-600 dark:text-violet-400" />
@@ -147,13 +153,32 @@ const StudentResitExams = () => {
               renderSkeletonCard()
             ) : (
               <form onSubmit={handleDeclareResit} className="space-y-5">
-                <CourseSelect 
-                  courses={courses}
-                  onChange={(id) => setSelectedCourseId(id)}
-                  isLoading={isLoadingCourses}
-                  label="Select Course"
-                  placeholder="Choose a course for resit"
-                />
+                <div className="space-y-2">
+                  <label className="text-sm font-medium" htmlFor="course-select">
+                    Select Course
+                  </label>
+                  <Select 
+                    value={selectedCourseId?.toString() || ""} 
+                    onValueChange={(value) => setSelectedCourseId(Number(value))}
+                  >
+                    <SelectTrigger className="w-full bg-white">
+                      <SelectValue placeholder="Choose a course for resit" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {courses.length > 0 ? (
+                        courses.map((course) => (
+                          <SelectItem key={course.course_id} value={course.course_id.toString()}>
+                            {course.course_code} - {course.course_name}
+                          </SelectItem>
+                        ))
+                      ) : (
+                        <SelectItem value="no-courses" disabled>
+                          No eligible courses found
+                        </SelectItem>
+                      )}
+                    </SelectContent>
+                  </Select>
+                </div>
                 
                 <Button 
                   type="submit" 
@@ -189,7 +214,7 @@ const StudentResitExams = () => {
           </CardContent>
         </Card>
 
-        <Card className="lg:col-span-2 overflow-hidden border border-gray-200/50 dark:border-gray-700/50 shadow-lg hover:shadow-xl transition-all duration-300">
+        <Card className="lg:col-span-2 overflow-hidden border border-gray-200/50 dark:border-gray-700/50 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
           <CardHeader className="bg-gradient-to-r from-indigo-50 to-violet-50 dark:from-indigo-900/20 dark:to-violet-900/20 border-b">
             <CardTitle className="text-xl font-semibold flex items-center">
               <List className="h-5 w-5 mr-3 text-violet-600 dark:text-violet-400" />

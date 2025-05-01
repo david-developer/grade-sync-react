@@ -1,12 +1,13 @@
 
 import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { dashboardAPI, facultyAPI } from "@/services/api";
+import { dashboardAPI, facultyAPI, instructorAPI, studentAPI } from "@/services/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Award, BookOpen, CalendarClock, Users, TrendingUp, Layers, GraduationCap } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 
 interface DashboardData {
   role: string;
@@ -57,6 +58,7 @@ const Dashboard = () => {
   const [resitRegistrations, setResitRegistrations] = useState<ResitRegistration[]>([]);
   const [showResitExams, setShowResitExams] = useState(false);
   const [showResitRegistrations, setShowResitRegistrations] = useState(false);
+  const [instructorCourses, setInstructorCourses] = useState([]);
   const { user } = useAuth();
   const navigate = useNavigate();
 
@@ -87,9 +89,24 @@ const Dashboard = () => {
       }
     };
 
+    // For instructor, fetch course data
+    const fetchInstructorData = async () => {
+      if (user?.role === "instructor") {
+        try {
+          const coursesData = await instructorAPI.getMyCourses();
+          setInstructorCourses(coursesData.courses || []);
+        } catch (error) {
+          console.error("Error fetching instructor courses:", error);
+        }
+      }
+    };
+
     fetchDashboardData();
     if (user?.role === "faculty_secretary") {
       fetchFacultyData();
+    }
+    if (user?.role === "instructor") {
+      fetchInstructorData();
     }
   }, [user?.role]);
 
@@ -107,7 +124,7 @@ const Dashboard = () => {
 
   const renderStatCard = (title: string, value: string | number, icon: React.ReactNode, index: number, onClick?: () => void) => (
     <Card 
-      className={`hover:shadow-xl transition-all duration-300 hover:-translate-y-1 overflow-hidden ${onClick ? 'cursor-pointer' : ''}`}
+      className={`transform transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 overflow-hidden ${onClick ? 'cursor-pointer' : ''}`}
       onClick={onClick}
     >
       <div className={`absolute inset-0 bg-gradient-to-br ${getGradientClass(index)} opacity-10 rounded-xl`}></div>
@@ -143,7 +160,7 @@ const Dashboard = () => {
 
     return (
       <div className="space-y-8 animate-fade-in">
-        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl p-6 text-white shadow-xl mb-8">
+        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl p-6 text-white shadow-xl mb-8 transform transition-all duration-300 hover:shadow-2xl hover:scale-[1.01]">
           <h2 className="text-3xl font-bold flex items-center">
             <GraduationCap className="mr-3 h-8 w-8" />
             Student Dashboard
@@ -168,7 +185,7 @@ const Dashboard = () => {
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {dashboardData.courses.map((course, index) => (
-                <Card key={course.course_id} className="hover:shadow-lg transition-all duration-200 bg-white dark:bg-gray-800">
+                <Card key={course.course_id} className="hover:shadow-xl transition-all duration-200 transform hover:-translate-y-1 bg-white dark:bg-gray-800">
                   <CardHeader className="pb-2">
                     <CardTitle className="text-lg font-medium">{course.course_code}</CardTitle>
                   </CardHeader>
@@ -185,11 +202,11 @@ const Dashboard = () => {
   };
 
   const renderInstructorDashboard = () => {
-    if (!dashboardData || !dashboardData.instructor_courses) return null;
+    if (!dashboardData) return null;
 
     return (
       <div className="space-y-8 animate-fade-in">
-        <div className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl p-6 text-white shadow-xl mb-8">
+        <div className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl p-6 text-white shadow-xl mb-8 transform transition-all duration-300 hover:shadow-2xl hover:scale-[1.01]">
           <h2 className="text-3xl font-bold flex items-center">
             <Users className="mr-3 h-8 w-8" />
             Instructor Dashboard
@@ -203,28 +220,36 @@ const Dashboard = () => {
             Your Courses
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {dashboardData.instructor_courses.map((course, index) => (
-              <Card key={course.course_id} className="overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-                <div className={`absolute inset-0 bg-gradient-to-br ${getGradientClass(index)} opacity-10 rounded-xl`}></div>
-                <CardHeader className="pb-2 border-b">
-                  <CardTitle className="text-lg flex items-center justify-between">
-                    {course.course_code}
-                    <span className="text-sm bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 py-1 px-2 rounded-full">
-                      {course.total_students} Students
-                    </span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="pt-4">
-                  <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">{course.course_name}</p>
-                  <p className="text-sm flex items-center">
-                    <CalendarClock className="h-4 w-4 mr-1 text-amber-500" />
-                    Resit Students: {
-                      dashboardData.resitStats?.find(stat => stat.course_code === course.course_code)?.resit_students || 0
-                    }
-                  </p>
-                </CardContent>
-              </Card>
-            ))}
+            {dashboardData.instructor_courses && dashboardData.instructor_courses.length > 0 ? (
+              dashboardData.instructor_courses.map((course, index) => (
+                <Card key={course.course_id} className="overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2">
+                  <div className={`absolute inset-0 bg-gradient-to-br ${getGradientClass(index)} opacity-10 rounded-xl`}></div>
+                  <CardHeader className="pb-2 border-b">
+                    <CardTitle className="text-lg flex items-center justify-between">
+                      {course.course_code}
+                      <span className="text-sm bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 py-1 px-2 rounded-full">
+                        {course.total_students} Students
+                      </span>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="pt-4">
+                    <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">{course.course_name}</p>
+                    <p className="text-sm flex items-center">
+                      <CalendarClock className="h-4 w-4 mr-1 text-amber-500" />
+                      Resit Students: {
+                        dashboardData.resitStats?.find(stat => stat.course_code === course.course_code)?.resit_students || 0
+                      }
+                    </p>
+                  </CardContent>
+                </Card>
+              ))
+            ) : (
+              <div className="col-span-3 text-center py-10 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm rounded-xl shadow-lg border border-gray-100 dark:border-gray-700">
+                <Users className="h-12 w-12 mx-auto text-gray-400 mb-3" />
+                <p className="text-lg text-gray-500 dark:text-gray-400">No courses assigned yet.</p>
+                <p className="text-sm text-gray-400">You'll see your courses here once they're assigned to you.</p>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -236,7 +261,7 @@ const Dashboard = () => {
 
     return (
       <div className="space-y-8 animate-fade-in">
-        <div className="bg-gradient-to-r from-emerald-600 to-teal-600 rounded-xl p-6 text-white shadow-xl mb-8">
+        <div className="bg-gradient-to-r from-emerald-600 to-teal-600 rounded-xl p-6 text-white shadow-xl mb-8 transform transition-all duration-300 hover:shadow-2xl hover:scale-[1.01]">
           <h2 className="text-3xl font-bold flex items-center">
             <TrendingUp className="mr-3 h-8 w-8" />
             Faculty Secretary Dashboard
@@ -245,14 +270,43 @@ const Dashboard = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {renderStatCard("Total Resit Registrations", dashboardData.total_resit_registrations || 0, 
-            <BookOpen className="h-5 w-5 text-emerald-600" />, 0, () => setShowResitRegistrations(true))}
-          {renderStatCard("Total Resit Exams", dashboardData.total_resit_exams || 0, 
-            <CalendarClock className="h-5 w-5 text-teal-600" />, 1, () => setShowResitExams(true))}
+          <HoverCard>
+            <HoverCardTrigger asChild>
+              {renderStatCard("Total Resit Registrations", dashboardData.total_resit_registrations || 0, 
+                <BookOpen className="h-5 w-5 text-emerald-600" />, 0, () => setShowResitRegistrations(true))}
+            </HoverCardTrigger>
+            <HoverCardContent className="w-80">
+              <div className="flex justify-between space-x-4">
+                <div className="space-y-1">
+                  <h4 className="text-sm font-semibold">Resit Registrations</h4>
+                  <p className="text-xs text-muted-foreground">
+                    Click to view all students registered for resit exams
+                  </p>
+                </div>
+              </div>
+            </HoverCardContent>
+          </HoverCard>
+          
+          <HoverCard>
+            <HoverCardTrigger asChild>
+              {renderStatCard("Total Resit Exams", dashboardData.total_resit_exams || 0, 
+                <CalendarClock className="h-5 w-5 text-teal-600" />, 1, () => setShowResitExams(true))}
+            </HoverCardTrigger>
+            <HoverCardContent className="w-80">
+              <div className="flex justify-between space-x-4">
+                <div className="space-y-1">
+                  <h4 className="text-sm font-semibold">Resit Exams</h4>
+                  <p className="text-xs text-muted-foreground">
+                    Click to view all scheduled resit exams
+                  </p>
+                </div>
+              </div>
+            </HoverCardContent>
+          </HoverCard>
         </div>
 
         {showResitExams && (
-          <Card className="mt-6 border border-gray-200/50 dark:border-gray-700/50 shadow-lg">
+          <Card className="mt-6 border border-gray-200/50 dark:border-gray-700/50 shadow-lg transform transition-all duration-300 hover:shadow-xl">
             <CardHeader className="bg-gradient-to-r from-teal-50 to-emerald-50 dark:from-teal-900/20 dark:to-emerald-900/20 border-b">
               <div className="flex justify-between items-center">
                 <CardTitle className="font-semibold flex items-center">
@@ -299,7 +353,7 @@ const Dashboard = () => {
         )}
 
         {showResitRegistrations && (
-          <Card className="mt-6 border border-gray-200/50 dark:border-gray-700/50 shadow-lg">
+          <Card className="mt-6 border border-gray-200/50 dark:border-gray-700/50 shadow-lg transform transition-all duration-300 hover:shadow-xl">
             <CardHeader className="bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20 border-b">
               <div className="flex justify-between items-center">
                 <CardTitle className="font-semibold flex items-center">

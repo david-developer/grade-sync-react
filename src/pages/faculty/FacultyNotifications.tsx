@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import { facultyAPI } from "@/services/api";
+import { facultyAPI, instructorAPI } from "@/services/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,14 +8,23 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Bell, Send, Download, Users } from "lucide-react";
 import { toast } from "sonner";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import CourseSelect, { Course } from "@/components/CourseSelect";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
+interface Student {
+  id: number;
+  name: string;
+  email?: string;
+}
+
 const FacultyNotifications = () => {
-  const [targetUserId, setTargetUserId] = useState("");
+  const [selectedStudentId, setSelectedStudentId] = useState<string>("");
+  const [students, setStudents] = useState<Student[]>([]);
   const [message, setMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  const [isLoadingStudents, setIsLoadingStudents] = useState(false);
   
   const [courses, setCourses] = useState<Course[]>([]);
   const [selectedCourseId, setSelectedCourseId] = useState<number | null>(null);
@@ -25,12 +34,10 @@ const FacultyNotifications = () => {
   useEffect(() => {
     const fetchCourses = async () => {
       try {
-        // Try to fetch courses using the facultyAPI.getCourses method
         const data = await facultyAPI.getCourses();
         setCourses(data.courses || []);
       } catch (error) {
         console.error("Error fetching courses:", error);
-        // Fallback in case the endpoint doesn't exist yet
         toast.error("Could not fetch courses. Please check if the API is available.");
         setCourses([]);
       } finally {
@@ -38,28 +45,44 @@ const FacultyNotifications = () => {
       }
     };
 
+    const fetchStudents = async () => {
+      setIsLoadingStudents(true);
+      try {
+        const data = await instructorAPI.getStudents();
+        setStudents(data.students || []);
+      } catch (error) {
+        console.error("Error fetching students:", error);
+        toast.error("Could not fetch students.");
+        setStudents([]);
+      } finally {
+        setIsLoadingStudents(false);
+      }
+    };
+
     fetchCourses();
+    fetchStudents();
   }, []);
 
   const handleSubmitToUser = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!targetUserId || !message) {
-      toast.error("User ID and message are required");
+    if (!selectedStudentId || !message) {
+      toast.error("Student and message are required");
       return;
     }
     
     setIsSubmitting(true);
     
     try {
-      await facultyAPI.sendNotification(null, message, parseInt(targetUserId));
+      await facultyAPI.sendNotification(null, message, parseInt(selectedStudentId));
       toast.success("Notification sent successfully");
       
       // Clear the form
-      setTargetUserId("");
+      setSelectedStudentId("");
       setMessage("");
     } catch (error) {
       console.error("Error sending notification:", error);
+      toast.error("Failed to send notification");
     } finally {
       setIsSubmitting(false);
     }
@@ -83,6 +106,7 @@ const FacultyNotifications = () => {
       setCourseMessage("");
     } catch (error) {
       console.error("Error sending notification:", error);
+      toast.error("Failed to send notification to course");
     } finally {
       setIsSubmitting(false);
     }
@@ -97,17 +121,11 @@ const FacultyNotifications = () => {
     setIsExporting(true);
     
     try {
-      // Try to use the exportResit method
-      try {
-        await facultyAPI.exportResit(selectedCourseId);
-        toast.success("Export started. Check your downloads folder.");
-      } catch (error) {
-        // Fallback if the method doesn't exist yet
-        console.error("Error exporting resit list:", error);
-        toast.error("Export functionality is not available yet.");
-      }
+      await facultyAPI.exportResit(selectedCourseId);
+      toast.success("Export started. Check your downloads folder.");
     } catch (error) {
       console.error("Error exporting resit list:", error);
+      toast.error("Failed to export resit participants list");
     } finally {
       setIsExporting(false);
     }
@@ -124,7 +142,7 @@ const FacultyNotifications = () => {
         </TabsList>
         
         <TabsContent value="individual">
-          <Card className="card-hover">
+          <Card className="card-hover transform transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
             <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-t-xl border-b">
               <CardTitle className="flex items-center text-xl font-bold">
                 <Bell className="h-5 w-5 mr-3 text-primary" />
@@ -134,16 +152,28 @@ const FacultyNotifications = () => {
             <CardContent className="pt-6">
               <form onSubmit={handleSubmitToUser} className="space-y-5">
                 <div className="space-y-2">
-                  <Label htmlFor="targetUserId">Student ID</Label>
-                  <Input
-                    id="targetUserId"
-                    type="number"
-                    placeholder="Enter student ID"
-                    value={targetUserId}
-                    onChange={(e) => setTargetUserId(e.target.value)}
-                    required
-                    className="bg-gradient-to-r from-gray-50 to-white hover:from-white hover:to-gray-50"
-                  />
+                  <Label htmlFor="selectedStudentId">Select Student</Label>
+                  <Select
+                    value={selectedStudentId}
+                    onValueChange={setSelectedStudentId}
+                  >
+                    <SelectTrigger className="w-full bg-gradient-to-r from-gray-50 to-white hover:from-white hover:to-gray-50">
+                      <SelectValue placeholder="Select a student" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {isLoadingStudents ? (
+                        <SelectItem value="loading" disabled>Loading students...</SelectItem>
+                      ) : students.length > 0 ? (
+                        students.map((student) => (
+                          <SelectItem key={student.id} value={student.id.toString()}>
+                            {student.name} {student.email ? `(${student.email})` : ''}
+                          </SelectItem>
+                        ))
+                      ) : (
+                        <SelectItem value="none" disabled>No students found</SelectItem>
+                      )}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="message">Message</Label>
@@ -160,7 +190,7 @@ const FacultyNotifications = () => {
                 <Button 
                   type="submit" 
                   className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
-                  disabled={isSubmitting || !targetUserId || !message}
+                  disabled={isSubmitting || !selectedStudentId || !message}
                 >
                   {isSubmitting ? (
                     <div className="flex items-center">
@@ -180,7 +210,7 @@ const FacultyNotifications = () => {
         </TabsContent>
         
         <TabsContent value="course">
-          <Card className="card-hover">
+          <Card className="card-hover transform transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
             <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-t-xl border-b">
               <CardTitle className="flex items-center text-xl font-bold">
                 <Users className="h-5 w-5 mr-3 text-primary" />
@@ -234,7 +264,7 @@ const FacultyNotifications = () => {
                     onClick={handleExport}
                     variant="secondary"
                     disabled={isExporting || !selectedCourseId}
-                    className="w-full"
+                    className="w-full hover:bg-gray-100"
                   >
                     {isExporting ? (
                       <div className="flex items-center">
