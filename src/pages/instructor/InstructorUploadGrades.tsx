@@ -99,7 +99,7 @@ const InstructorUploadGrades = () => {
   };
 
   const getSelectedCourse = () => {
-    return courses.find(course => course.id === courseId);
+    return courses.find(course => course.course_id === courseId);
   };
 
   const renderStepIndicator = () => (
@@ -168,7 +168,7 @@ const InstructorUploadGrades = () => {
                 <div>
                   <h3 className="font-medium text-blue-800 dark:text-blue-300">Selected Course</h3>
                   <p className="text-sm text-blue-600 dark:text-blue-400 mt-1">
-                    {getSelectedCourse()?.code} - {getSelectedCourse()?.name}
+                    {getSelectedCourse()?.course_code} - {getSelectedCourse()?.course_name}
                   </p>
                 </div>
               </div>
@@ -240,7 +240,7 @@ const InstructorUploadGrades = () => {
               </div>
               <h3 className="text-xl font-medium text-green-800 dark:text-green-300 mb-2">Upload Successful!</h3>
               <p className="text-green-600 dark:text-green-400">
-                Grades have been successfully uploaded for {getSelectedCourse()?.code}
+                Grades have been successfully uploaded for {getSelectedCourse()?.course_code}
               </p>
               
               {uploadResult && (
