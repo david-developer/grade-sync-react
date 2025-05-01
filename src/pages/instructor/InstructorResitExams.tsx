@@ -12,7 +12,6 @@ import CourseSelect, { Course } from "@/components/CourseSelect";
 
 const InstructorResitExams = () => {
   const [resitFormData, setResitFormData] = useState({
-    exam_date: "",
     no_of_questions: "",
     allowed_tools: "",
     notes: "",
@@ -54,8 +53,8 @@ const InstructorResitExams = () => {
   const handleResitSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!selectedCourseId || !resitFormData.exam_date) {
-      toast.error("Course and exam date are required");
+    if (!selectedCourseId) {
+      toast.error("Course is required");
       return;
     }
     
@@ -64,7 +63,6 @@ const InstructorResitExams = () => {
     try {
       await instructorAPI.addResitDetails({
         course_id: selectedCourseId,
-        exam_date: resitFormData.exam_date,
         no_of_questions: resitFormData.no_of_questions ? parseInt(resitFormData.no_of_questions) : undefined,
         allowed_tools: resitFormData.allowed_tools || undefined,
         notes: resitFormData.notes || undefined,
@@ -74,7 +72,6 @@ const InstructorResitExams = () => {
       
       // Clear the form
       setResitFormData({
-        exam_date: "",
         no_of_questions: "",
         allowed_tools: "",
         notes: "",
@@ -128,18 +125,6 @@ const InstructorResitExams = () => {
                 placeholder="Select a course"
               />
               
-              <div className="space-y-2">
-                <Label htmlFor="exam_date">Exam Date *</Label>
-                <Input
-                  id="exam_date"
-                  name="exam_date"
-                  type="date"
-                  value={resitFormData.exam_date}
-                  onChange={handleResitInputChange}
-                  required
-                  className="bg-gradient-to-r from-gray-50 to-white hover:from-white hover:to-gray-50"
-                />
-              </div>
               <div className="space-y-2">
                 <Label htmlFor="no_of_questions">Number of Questions</Label>
                 <Input

@@ -1,4 +1,3 @@
-
 import axios from "axios";
 import { toast } from "sonner";
 
@@ -128,6 +127,7 @@ export const instructorAPI = {
   },
   addResitDetails: async (data: {
     course_id: number;
+    exam_date?: string;
     no_of_questions?: number;
     allowed_tools?: string;
     notes?: string;
