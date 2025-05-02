@@ -1,21 +1,26 @@
 
 import { useState, useEffect } from "react";
-import { facultyAPI, instructorAPI } from "@/services";
+import { facultyAPI } from "@/services";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Bell, Send, Download, Users } from "lucide-react";
 import { toast } from "sonner";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import CourseSelect, { Course } from "@/components/CourseSelect";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import LoadingDashboard from "@/components/dashboard/LoadingDashboard";
 
 interface Student {
-  id: number;
-  name: string;
-  email?: string;
+  user_id: number;
+  email: string;
+  name?: string;
+}
+
+interface ResitCourse {
+  course_id: number;
+  course_code: string;
+  course_name: string;
 }
 
 const FacultyNotifications = () => {
@@ -24,31 +29,18 @@ const FacultyNotifications = () => {
   const [message, setMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
-  const [isLoadingStudents, setIsLoadingStudents] = useState(false);
+  const [isLoadingStudents, setIsLoadingStudents] = useState(true);
   
-  const [courses, setCourses] = useState<Course[]>([]);
+  const [courses, setCourses] = useState<ResitCourse[]>([]);
   const [selectedCourseId, setSelectedCourseId] = useState<number | null>(null);
   const [isLoadingCourses, setIsLoadingCourses] = useState(true);
   const [courseMessage, setCourseMessage] = useState("");
 
   useEffect(() => {
-    const fetchCourses = async () => {
-      try {
-        const data = await facultyAPI.getCourses();
-        setCourses(data.courses || []);
-      } catch (error) {
-        console.error("Error fetching courses:", error);
-        toast.error("Could not fetch courses. Please check if the API is available.");
-        setCourses([]);
-      } finally {
-        setIsLoadingCourses(false);
-      }
-    };
-
     const fetchStudents = async () => {
       setIsLoadingStudents(true);
       try {
-        const data = await instructorAPI.getStudents();
+        const data = await facultyAPI.getResitRegisteredStudents();
         setStudents(data.students || []);
       } catch (error) {
         console.error("Error fetching students:", error);
@@ -59,8 +51,22 @@ const FacultyNotifications = () => {
       }
     };
 
-    fetchCourses();
+    const fetchCourses = async () => {
+      setIsLoadingCourses(true);
+      try {
+        const data = await facultyAPI.getResitCourses();
+        setCourses(data.courses || []);
+      } catch (error) {
+        console.error("Error fetching courses:", error);
+        toast.error("Could not fetch courses.");
+        setCourses([]);
+      } finally {
+        setIsLoadingCourses(false);
+      }
+    };
+
     fetchStudents();
+    fetchCourses();
   }, []);
 
   const handleSubmitToUser = async (e: React.FormEvent) => {
@@ -74,12 +80,16 @@ const FacultyNotifications = () => {
     setIsSubmitting(true);
     
     try {
-      await facultyAPI.sendNotification(null, message, parseInt(selectedStudentId));
-      toast.success("Notification sent successfully");
+      const result = await facultyAPI.sendNotification(null, message, parseInt(selectedStudentId));
       
-      // Clear the form
-      setSelectedStudentId("");
-      setMessage("");
+      if (result.success) {
+        toast.success("Notification sent successfully");
+        // Clear the form
+        setSelectedStudentId("");
+        setMessage("");
+      } else {
+        toast.error(result.message || "Failed to send notification");
+      }
     } catch (error) {
       console.error("Error sending notification:", error);
       toast.error("Failed to send notification");
@@ -99,11 +109,15 @@ const FacultyNotifications = () => {
     setIsSubmitting(true);
     
     try {
-      await facultyAPI.sendNotification(selectedCourseId, courseMessage);
-      toast.success("Notification sent to all course participants");
+      const result = await facultyAPI.sendNotification(selectedCourseId, courseMessage);
       
-      // Clear the form
-      setCourseMessage("");
+      if (result.success) {
+        toast.success("Notification sent to all course participants");
+        // Clear the form
+        setCourseMessage("");
+      } else {
+        toast.error(result.message || "Failed to send notification to course");
+      }
     } catch (error) {
       console.error("Error sending notification:", error);
       toast.error("Failed to send notification to course");
@@ -121,8 +135,12 @@ const FacultyNotifications = () => {
     setIsExporting(true);
     
     try {
-      await facultyAPI.exportResit(selectedCourseId);
-      toast.success("Export started. Check your downloads folder.");
+      const result = await facultyAPI.exportResit(selectedCourseId);
+      if (result.success) {
+        toast.success("Export started. Check your downloads folder.");
+      } else {
+        toast.error(result.message || "Failed to export resit participants list");
+      }
     } catch (error) {
       console.error("Error exporting resit list:", error);
       toast.error("Failed to export resit participants list");
@@ -130,6 +148,10 @@ const FacultyNotifications = () => {
       setIsExporting(false);
     }
   };
+
+  if (isLoadingStudents && isLoadingCourses) {
+    return <LoadingDashboard />;
+  }
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -165,8 +187,8 @@ const FacultyNotifications = () => {
                         <SelectItem value="loading" disabled>Loading students...</SelectItem>
                       ) : students.length > 0 ? (
                         students.map((student) => (
-                          <SelectItem key={student.id} value={student.id.toString()}>
-                            {student.name} {student.email ? `(${student.email})` : ''}
+                          <SelectItem key={student.user_id} value={student.user_id.toString()}>
+                            {student.name || student.email}
                           </SelectItem>
                         ))
                       ) : (
@@ -219,13 +241,30 @@ const FacultyNotifications = () => {
             </CardHeader>
             <CardContent className="pt-6">
               <form onSubmit={handleSubmitToCourse} className="space-y-5">
-                <CourseSelect 
-                  courses={courses}
-                  onChange={(id) => setSelectedCourseId(id)}
-                  isLoading={isLoadingCourses}
-                  label="Select Course"
-                  placeholder="Choose a course"
-                />
+                <div className="space-y-2">
+                  <Label htmlFor="course">Select Course</Label>
+                  <Select
+                    value={selectedCourseId?.toString() || ""}
+                    onValueChange={(value) => setSelectedCourseId(parseInt(value))}
+                  >
+                    <SelectTrigger className="w-full bg-gradient-to-r from-gray-50 to-white hover:from-white hover:to-gray-50">
+                      <SelectValue placeholder="Choose a course" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {isLoadingCourses ? (
+                        <SelectItem value="loading" disabled>Loading courses...</SelectItem>
+                      ) : courses.length > 0 ? (
+                        courses.map((course) => (
+                          <SelectItem key={course.course_id} value={course.course_id.toString()}>
+                            {course.course_name} ({course.course_code})
+                          </SelectItem>
+                        ))
+                      ) : (
+                        <SelectItem value="none" disabled>No courses available</SelectItem>
+                      )}
+                    </SelectContent>
+                  </Select>
+                </div>
                 
                 <div className="space-y-2">
                   <Label htmlFor="courseMessage">Message</Label>

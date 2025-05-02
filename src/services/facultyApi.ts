@@ -11,6 +11,24 @@ export const facultyAPI = {
       return { courses: [] };
     }
   },
+  getResitCourses: async () => {
+    try {
+      const response = await api.get("/faculty/resit-courses");
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching resit courses:", error);
+      return { courses: [] };
+    }
+  },
+  getResitRegisteredStudents: async () => {
+    try {
+      const response = await api.get("/faculty/resit-registered-students");
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching resit registered students:", error);
+      return { students: [] };
+    }
+  },
   uploadSchedule: async (file: File) => {
     const formData = new FormData();
     formData.append("file", file);
@@ -120,12 +138,12 @@ export const facultyAPI = {
     }
     
     try {
-      const response = await api.post("/faculty/notify", payload);
+      const response = await api.post("/api/notify", payload);
       return response.data;
     } catch (error) {
       console.error("Notification error:", error);
       // Return fallback response
-      return { success: true, message: "Notification sent successfully" };
+      return { success: false, message: "Failed to send notification" };
     }
   },
 };
