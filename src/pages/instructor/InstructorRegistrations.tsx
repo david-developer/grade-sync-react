@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import { instructorAPI } from "@/services/api";
+import { instructorAPI } from "@/services";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,

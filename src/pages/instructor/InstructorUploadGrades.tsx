@@ -1,10 +1,10 @@
-
 import { useState, useEffect } from "react";
-import { instructorAPI } from "@/services/api";
+import { instructorAPI } from "@/services";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Upload, Check, ChevronRight, FileText, Info } from "lucide-react";
 import { toast } from "sonner";
 import CourseSelect, { Course } from "@/components/CourseSelect";

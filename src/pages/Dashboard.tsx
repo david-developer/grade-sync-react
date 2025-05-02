@@ -1,7 +1,6 @@
-
 import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { dashboardAPI, facultyAPI, instructorAPI, studentAPI } from "@/services/api";
+import { dashboardAPI, facultyAPI, instructorAPI, studentAPI } from "@/services";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Award, BookOpen, CalendarClock, Users, TrendingUp, Layers, GraduationCap } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";

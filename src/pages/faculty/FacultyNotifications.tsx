@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import { facultyAPI, instructorAPI } from "@/services/api";
+import { facultyAPI, instructorAPI } from "@/services";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
