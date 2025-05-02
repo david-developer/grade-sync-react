@@ -32,15 +32,32 @@ const StudentGrades = () => {
         const data = await studentAPI.getGrades();
         setGrades(data.grades || []);
         
-        // Calculate GPA
+        // Calculate GPA - improved calculation
         if (data.grades && data.grades.length > 0) {
           const validGrades = data.grades.filter((grade: Grade) => grade.grade !== null);
           if (validGrades.length > 0) {
             const totalGradePoints = validGrades.reduce((sum: number, grade: Grade) => {
-              return sum + (grade.grade || 0);
+              let points = 0;
+              const numericGrade = grade.grade || 0;
+              
+              // Convert numeric grade to GPA points
+              if (numericGrade >= 90) points = 4.0;       // AA
+              else if (numericGrade >= 85) points = 3.7;  // BA
+              else if (numericGrade >= 80) points = 3.3;  // BB
+              else if (numericGrade >= 75) points = 3.0;  // CB
+              else if (numericGrade >= 70) points = 2.7;  // CC
+              else if (numericGrade >= 65) points = 2.3;  // DC
+              else if (numericGrade >= 60) points = 2.0;  // DD
+              else if (numericGrade >= 50) points = 1.7;  // FD
+              else points = 0.0;                          // FF
+              
+              return sum + points;
             }, 0);
+            
             const calculatedGpa = totalGradePoints / validGrades.length;
-            setGpa(calculatedGpa.toFixed(2));
+            // Ensure we convert the calculated GPA to the same scale as displayed in the dashboard (0-100)
+            const scaledGpa = calculatedGpa * 25; // Scale 0-4 to 0-100
+            setGpa(scaledGpa.toFixed(2));
           } else {
             setGpa("0.00");
           }
