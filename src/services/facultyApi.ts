@@ -72,7 +72,7 @@ export const facultyAPI = {
       return response.data;
     } catch (error) {
       console.error("Error fetching all resit registrations:", error);
-      // Return fallback data to prevent UI errors
+      // Return fallback data with the correct structure to prevent UI errors
       return {
         registrations: []
       };
@@ -84,7 +84,7 @@ export const facultyAPI = {
       return response.data;
     } catch (error) {
       console.error("Error fetching all resit exams:", error);
-      // Return fallback data to prevent UI errors
+      // Return fallback data with the correct structure to prevent UI errors
       return {
         resitExams: []
       };

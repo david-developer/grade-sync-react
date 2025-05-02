@@ -371,7 +371,7 @@ const Dashboard = () => {
             </CardHeader>
             <CardContent className="p-0">
               <div className="p-4">
-                {resitRegistrations.length > 0 ? (
+                {resitRegistrations && resitRegistrations.length > 0 ? (
                   <div className="divide-y divide-gray-100 dark:divide-gray-800">
                     {resitRegistrations.map((reg, i) => (
                       <div key={i} className="py-4 first:pt-0 last:pb-0">
@@ -384,11 +384,17 @@ const Dashboard = () => {
                         <div className="mt-2">
                           <p className="text-sm font-medium text-gray-600 dark:text-gray-300 mb-1">Registered Students:</p>
                           <ul className="text-sm text-gray-500 dark:text-gray-400 pl-4 list-disc">
-                            {reg.students.slice(0, 5).map((student, j) => (
-                              <li key={j}>{student.student_name}</li>
-                            ))}
-                            {reg.students.length > 5 && (
-                              <li className="italic">And {reg.students.length - 5} more...</li>
+                            {reg.students && reg.students.length > 0 ? (
+                              <>
+                                {reg.students.slice(0, 5).map((student, j) => (
+                                  <li key={j}>{student.student_name}</li>
+                                ))}
+                                {reg.students.length > 5 && (
+                                  <li className="italic">And {reg.students.length - 5} more...</li>
+                                )}
+                              </>
+                            ) : (
+                              <li>No student details available</li>
                             )}
                           </ul>
                         </div>
