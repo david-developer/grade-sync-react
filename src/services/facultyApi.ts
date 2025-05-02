@@ -74,27 +74,7 @@ export const facultyAPI = {
       console.error("Error fetching all resit registrations:", error);
       // Return fallback data to prevent UI errors
       return {
-        registrations: [
-          {
-            course_id: 101,
-            course_code: "CSE101",
-            course_name: "Introduction to Computer Science",
-            student_count: 2,
-            students: [
-              { student_id: 1, student_name: "John Doe" },
-              { student_id: 2, student_name: "Jane Smith" }
-            ]
-          },
-          {
-            course_id: 202,
-            course_code: "MTH202",
-            course_name: "Advanced Calculus",
-            student_count: 1,
-            students: [
-              { student_id: 3, student_name: "Alex Johnson" }
-            ]
-          }
-        ]
+        registrations: []
       };
     }
   },
@@ -106,22 +86,7 @@ export const facultyAPI = {
       console.error("Error fetching all resit exams:", error);
       // Return fallback data to prevent UI errors
       return {
-        resitExams: [
-          {
-            course_id: 101,
-            course_code: "CSE101",
-            course_name: "Introduction to Computer Science",
-            instructor_name: "Dr. Smith",
-            exam_date: new Date().toISOString()
-          },
-          {
-            course_id: 202,
-            course_code: "MTH202",
-            course_name: "Advanced Calculus",
-            instructor_name: "Prof. Johnson",
-            exam_date: new Date(Date.now() + 86400000).toISOString()
-          }
-        ]
+        resitExams: []
       };
     }
   },

@@ -2,11 +2,12 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { dashboardAPI, facultyAPI, instructorAPI, studentAPI } from "@/services";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Award, BookOpen, CalendarClock, Users, TrendingUp, Layers, GraduationCap } from "lucide-react";
+import { Award, BookOpen, CalendarClock, Users, TrendingUp, Layers, GraduationCap, Loader } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
+import { toast } from "sonner";
 
 interface DashboardData {
   role: string;
@@ -409,7 +410,7 @@ const Dashboard = () => {
     if (loading) {
       return (
         <div className="space-y-8">
-          <Skeleton className="h-12 w-72 mb-8" />
+          <Loader className="h-12 w-72 mb-8" />
           {renderLoadingSkeletons()}
         </div>
       );

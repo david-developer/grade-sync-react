@@ -13,7 +13,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Calendar, List, Clock, MapPin, FileText, Info, Layers } from "lucide-react";
 import { toast } from "sonner";
-import CourseSelect, { Course } from "@/components/CourseSelect";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -29,10 +28,16 @@ interface ResitExam {
   notes: string | null;
 }
 
+interface ResitCourse {
+  course_id: number;
+  course_code: string;
+  course_name: string;
+}
+
 const StudentResitExams = () => {
   const [resitExams, setResitExams] = useState<ResitExam[]>([]);
   const [loading, setLoading] = useState(true);
-  const [courses, setCourses] = useState<Course[]>([]);
+  const [courses, setCourses] = useState<ResitCourse[]>([]);
   const [selectedCourseId, setSelectedCourseId] = useState<number | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoadingCourses, setIsLoadingCourses] = useState(true);
@@ -150,7 +155,11 @@ const StudentResitExams = () => {
           </CardHeader>
           <CardContent className="pt-6">
             {isLoadingCourses ? (
-              renderSkeletonCard()
+              <div className="animate-pulse space-y-4">
+                <Skeleton className="h-8 w-48 mb-2" />
+                <Skeleton className="h-12 w-full" />
+                <Skeleton className="h-10 w-40" />
+              </div>
             ) : (
               <form onSubmit={handleDeclareResit} className="space-y-5">
                 <div className="space-y-2">
@@ -161,19 +170,19 @@ const StudentResitExams = () => {
                     value={selectedCourseId?.toString() || ""} 
                     onValueChange={(value) => setSelectedCourseId(Number(value))}
                   >
-                    <SelectTrigger className="w-full bg-white">
+                    <SelectTrigger className="w-full bg-white dark:bg-gray-800">
                       <SelectValue placeholder="Choose a course for resit" />
                     </SelectTrigger>
                     <SelectContent>
                       {courses.length > 0 ? (
                         courses.map((course) => (
                           <SelectItem key={course.course_id} value={course.course_id.toString()}>
-                            {course.course_code} - {course.course_name}
+                            {course.course_name} ({course.course_code})
                           </SelectItem>
                         ))
                       ) : (
                         <SelectItem value="no-courses" disabled>
-                          No eligible courses found
+                          No eligible courses for resit.
                         </SelectItem>
                       )}
                     </SelectContent>
@@ -183,7 +192,7 @@ const StudentResitExams = () => {
                 <Button 
                   type="submit" 
                   className="w-full h-11 rounded-lg bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 transition-all duration-200 shadow-md hover:shadow-lg" 
-                  disabled={isSubmitting || !selectedCourseId}
+                  disabled={isSubmitting || !selectedCourseId || courses.length === 0}
                 >
                   {isSubmitting ? (
                     <div className="flex items-center">
